@@ -50,7 +50,6 @@ Route::prefix('compras')->group(function () {
 
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [LoginController::class, 'register']);
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
     Route::post('/revoke-all', [LoginController::class, 'revokeAllTokens'])->middleware('auth:sanctum');

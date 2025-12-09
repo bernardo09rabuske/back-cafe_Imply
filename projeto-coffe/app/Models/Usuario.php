@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+class Usuario extends Authenticatable
+{
+    use HasApiTokens, Notifiable, SoftDeletes;
 
-class Usuario extends Model{
-
-    use SoftDeletes;
     protected $table = 'usuario';
-    protected $hidden = ['senha'];
     protected $primaryKey = 'id';
     public $timestamps = true;
 
@@ -21,8 +22,17 @@ class Usuario extends Model{
         'senha',
         'acesso',
     ];
-    public function compras()
+
+    protected $hidden = ['senha'];
+
+    public function compras(): HasMany
     {
         return $this->hasMany(Compras::class, 'usuario_id');
+    }
+
+    // Faz o Auth saber que a senha está na coluna 'senha'
+    public function getAuthPassword()
+    {
+        return $this->senha;
     }
 }

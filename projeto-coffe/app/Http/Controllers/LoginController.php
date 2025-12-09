@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    
     public function login(Request $request)
     {
         $ip = $request->ip();
@@ -20,29 +20,27 @@ class LoginController extends Controller
             ], 429);
         }
 
-        
         $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required']
+            'senha' => ['required']
         ], [
             'email.required' => 'O e-mail é obrigatório',
             'email.email' => 'O e-mail deve ser válido',
-            'password.required' => 'A senha é obrigatória',
+            'senha.required' => 'A senha é obrigatória',
         ]);
 
-        $credentials = [
-            'email' => $request->email,
-            'password' => $request->password 
-        ];
+   $user = Usuario::where('email', $request->email)->first();
 
-        if (!Auth::attempt($credentials)) {
-            RateLimiter::hit("login:{$ip}", 60);
-            return response()->json(['error' => 'Credenciais inválidas'], 401);
-        }
+if (!$user || !Hash::check($request->senha, $user->senha)) {
+    RateLimiter::hit("login:{$ip}", 60);
+    return response()->json(['error' => 'Credenciais inválidas'], 401);
+}
+
+
 
         RateLimiter::clear("login:{$ip}");
 
-        $user = User::where('email', $request->email)->first();
+        $user = Usuario::where('email', $request->email)->first();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
