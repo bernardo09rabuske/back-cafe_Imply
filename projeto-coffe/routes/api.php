@@ -91,3 +91,6 @@ Route::middleware(['auth:sanctum'])->post('/admin/update', function (Request $re
 });
 
 
+Route::delete('/fila/{id}', [FilaController::class, 'excluir'])->middleware('admin');
+Route::post('/compras/{id}/cancelar', [ComprasController::class, 'cancelar'])->middleware('admin');
+Route::get('/dashboard/admin', [ComprasController::class, 'dashboard'])->middleware('admin');

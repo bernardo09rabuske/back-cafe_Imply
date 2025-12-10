@@ -12,18 +12,17 @@ return new class extends Migration
    public function up()
 {
     Schema::create('compras', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('fila_id')->constrained('fila')->onDelete('cascade')->nullable()->after('usuario_id');
-        $table->foreignId('usuario_id')->constrained('usuario')->onDelete('cascade');
-        $table->integer('cafe_qtd');
-        $table->integer('filtro_qtd');
-        $table->dateTime('data_compra');
-        $table->foreignId('alterado_por')->nullable()->constrained('usuario');
-        $table->dateTime('alterado_em')->nullable();
-        $table->timestamps();
-        $table->softDeletes();
-        
-    });
+    $table->id();
+    $table->foreignId('usuario_id')->constrained('usuario')->onDelete('cascade');
+    $table->integer('cafe_qtd');
+    $table->integer('filtro_qtd');
+    $table->dateTime('data_compra');
+    $table->foreignId('alterado_por')->nullable()->constrained('usuario');
+    $table->dateTime('alterado_em')->nullable();
+    $table->timestamps();
+    $table->softDeletes();
+});
+
 }
 
 

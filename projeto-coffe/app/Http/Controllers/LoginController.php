@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Hash;
+use App\Models\PersonalAccessToken;
+use Carbon\Carbon;
 
 class LoginController extends Controller
 {
@@ -29,24 +30,28 @@ class LoginController extends Controller
             'senha.required' => 'A senha é obrigatória',
         ]);
 
-   $user = Usuario::where('email', $request->email)->first();
+        $user = Usuario::where('email', $request->email)->first();
 
-if (!$user || !Hash::check($request->senha, $user->senha)) {
-    RateLimiter::hit("login:{$ip}", 60);
-    return response()->json(['error' => 'Credenciais inválidas'], 401);
-}
-
-
+        if (!$user || !Hash::check($request->senha, $user->senha)) {
+            RateLimiter::hit("login:{$ip}", 60);
+            return response()->json(['error' => 'Credenciais inválidas'], 401);
+        }
 
         RateLimiter::clear("login:{$ip}");
 
-        $user = Usuario::where('email', $request->email)->first();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Criar token
+        $tokenModel = $user->createToken('auth_token');
+        $plainTextToken = $tokenModel->plainTextToken;
+
+        // Definir expiração para 3 horas
+        $tokenModel->accessToken->expires_at = Carbon::now()->addHours(3);
+        $tokenModel->accessToken->save();
 
         return response()->json([
             'message' => 'Login realizado com sucesso',
             'user' => $user,
-            'token' => $token
+            'token' => $plainTextToken,
+            'expires_at' => Carbon::now()->addHours(3)->toDateTimeString()
         ]);
     }
 

@@ -39,7 +39,7 @@ class UsuarioRequest extends FormRequest
                 'nullable',
                 'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s])[^\s]{8,}$/'
             ],
-            'acesso' => ['nullable', 'string'],
+            'acesso' => ['nullable', 'string', 'in:admin,usuario'],
         ];
     }
     public function messages()

@@ -42,4 +42,7 @@ class Fila extends Model
             $fila->save();
         }
     }
+    public function compra() {
+    return $this->belongsTo(Compras::class, 'compra_id');
+}
 }

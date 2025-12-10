@@ -12,13 +12,16 @@ return new class extends Migration
     public function up(): void
     {
     Schema::create('fila', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('usuario_id')->constrained('usuario')->onDelete('cascade');
-        $table->integer('posicao');
-        $table->boolean('ativo')->default(true);
-        $table->timestamps();
-        $table->softDeletes();
+    $table->id();
+    $table->foreignId('usuario_id')->constrained('usuario')->onDelete('cascade');
+    $table->unsignedBigInteger('compra_id')->nullable(); // apenas a coluna
+    $table->integer('posicao');
+    $table->boolean('ativo')->default(true);
+    $table->timestamps();
+    $table->softDeletes();
 });
+
+
     }
 
     /**
