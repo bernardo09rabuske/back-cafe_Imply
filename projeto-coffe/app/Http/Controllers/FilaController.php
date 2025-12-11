@@ -30,38 +30,31 @@ class FilaController extends Controller
 }
 
 
-    public function adicionar(Request $request, $usuarioId)
+    public function adicionar(Request $request)
 {
-    $usuario = Usuario::findOrFail($usuarioId);
+    $user = $request->user();
 
-    $existente = Fila::where('usuario_id', $usuarioId)
-        ->whereNull('deleted_at')
-        ->first();
+    $ja = Fila::where('usuario_id', $user->id)->whereNull('deleted_at')->first();
+    if ($ja) return response()->json(['message' => 'Já está na fila'], 400);
 
-    if ($existente) {
-        return response()->json(['message' => 'Usuário já cadastrado na fila', 'fila' => $existente]);
-    }
+    $compra = Compras::create([
+        'usuario_id' => $user->id,
+        'cafe_qtd' => $request->cafe_qtd ?? 1,
+        'filtro_qtd' => $request->filtro_qtd ?? 0,
+        'data_compra' => now()
+    ]);
 
-    // Cria a compra
-    $compra = new Compras();
-    $compra->usuario_id = $usuarioId;
-    $compra->cafe_qtd = $request->cafe_qtd ?? 1;
-    $compra->filtro_qtd = $request->filtro_qtd ?? 0;
-    $compra->data_compra = now();
-    $compra->save();
+    $ultimo = Fila::whereNull('deleted_at')->orderBy('posicao', 'desc')->first();
+    $pos = $ultimo ? $ultimo->posicao + 1 : 1;
 
-    // Adiciona na fila
-    $ultimoFila = Fila::whereNull('deleted_at')->orderBy('posicao', 'desc')->first();
-    $posicaoNova = $ultimoFila ? $ultimoFila->posicao + 1 : 1;
+    $fila = Fila::create([
+        'usuario_id' => $user->id,
+        'compra_id' => $compra->id,
+        'posicao' => $pos,
+        'ativo' => true
+    ]);
 
-    $fila = new Fila();
-    $fila->usuario_id = $usuarioId;
-    $fila->posicao = $posicaoNova;
-    $fila->ativo = true;
-    $fila->compra_id = $compra->id;
-    $fila->save();
-
-    return response()->json(['message' => 'Usuário cadastrado na fila com sucesso', 'fila' => $fila]);
+    return ['message' => 'Entrou na fila', 'fila' => $fila];
 }
 public function buscar(Request $request, $id)
 {
@@ -88,16 +81,18 @@ public function buscar(Request $request, $id)
         'data' => $filas
     ]);
 }
-    public function excluir($id, Request $request)
-    {
-        $this->checkAdmin($request);
-
-        $fila = Fila::find($id);
-        if (!$fila) return response()->json(['error' => 'Registro não encontrado'], 404);
-
-        $fila->delete();
-        return response()->json(['message' => 'Registro excluído com sucesso', 'id_excluido' => $id]);
+    public function excluir($usuarioId)
+{
+    $fila = Fila::where('usuario_id', $usuarioId)->whereNull('deleted_at')->first();
+    if (!$fila) {
+        return response()->json(['error' => 'Usuário não está na fila'], 404);
     }
+
+    $fila->delete();
+
+    return response()->json(['message' => 'Saiu da fila']);
+}
+
 
     public function moverAposCompra(int $usuarioId)
 {
@@ -133,6 +128,19 @@ public function buscar(Request $request, $id)
 
     return ['message' => 'Usuário movido com sucesso', 'fila' => $fila];
 }
+
+public function sair(Request $request)
+{
+    $user = $request->user();
+
+    $fila = Fila::where('usuario_id', $user->id)->whereNull('deleted_at')->first();
+    if (!$fila) return response()->json(['error' => 'Não está na fila'], 404);
+
+    $fila->delete();
+
+    return ['message' => 'Saiu da fila'];
+}
+
 }
 
  

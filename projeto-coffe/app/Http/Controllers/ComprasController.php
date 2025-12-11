@@ -22,9 +22,7 @@ class ComprasController extends Controller
         }
     }
 
-    // ---------------------------
-    // Adicionar compra
-    // ---------------------------
+    
     public function adicionar(ComprasRequest $request)
     {
         $validate = $request->validated();
@@ -52,18 +50,14 @@ class ComprasController extends Controller
         return response()->json(['message' => 'Compra registrada com sucesso', 'compra' => $compra]);
     }
 
-    // ---------------------------
-    // Listar todas as compras
-    // ---------------------------
+    
     public function listar(Request $request)
     {
         $compras = Compras::get();
         return response()->json(['compras' => $compras]);
     }
 
-    // ---------------------------
-    // Cancelar compra (somente admin)
-    // ---------------------------
+
     public function cancelar($compraId, Request $request)
     {
         $this->checkAdmin($request);
@@ -105,9 +99,22 @@ class ComprasController extends Controller
         ]);
     }
 
-    // ---------------------------
-    // Dashboard admin (somente admin)
-    // ---------------------------
+   public function atualizar(Request $request, $compraId)
+{
+    $this->checkAdmin($request); 
+
+    $compra = Compras::find($compraId);
+    if (!$compra) {
+        return response()->json(['message' => 'Compra não encontrada'], 404);
+    }
+
+    $compra->cafe_qtd = $request->input('cafe_qtd', $compra->cafe_qtd);
+    $compra->filtro_qtd = $request->input('filtro_qtd', $compra->filtro_qtd);
+    $compra->save();
+
+    return response()->json(['message' => 'Compra atualizada com sucesso', 'compra' => $compra]);
+}
+
     public function dashboard(Request $request)
 {
     $this->checkAdmin($request);
